@@ -51,11 +51,17 @@ def detect(net, im_file):
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
-    timer = Timer()
-    timer.tic()
-    scores, boxes = im_detect(net, im)
-    timer.toc()
-    print ('\n\nDetection took {:.3f}s for {:d} object proposals').format(timer.total_time, boxes.shape[0])
+    N = 10
+    avg = 0
+    for i in range(N):
+	    timer = Timer()
+	    timer.tic()
+	    scores, boxes = im_detect(net, im)
+	    timer.toc()
+	    avg += timer.total_time
+	    print ('Iteration {:d} took {:.3f}s').format(i, timer.total_time)
+    avg /= N
+    print ('\nDetection took {:.3f}s for {:d} object proposals').format(avg, boxes.shape[0])
 
     print 'boxes.spape:', boxes.shape
     print 'scores.shape:', scores.shape
@@ -88,17 +94,17 @@ def usage():
 if __name__ == '__main__':
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
 
-    prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'VGG16', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'VGG16_faster_rcnn_final.caffemodel')
-    #prototxt = os.path.join(MODELS_DIR, 'ZF', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    #caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'ZF_faster_rcnn_final.caffemodel')
+    #prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'VGG16', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
+    #caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'VGG16_faster_rcnn_final.caffemodel')
+    prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'ZF', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
+    caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'ZF_faster_rcnn_final.caffemodel')
 
     caffe.set_mode_gpu()
     caffe.set_device(0)
 
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
-    print '\n\nLoaded network {:s}'.format(caffemodel)
+    print '\n\nLoaded network {:s}\n'.format(caffemodel)
 
     if len(sys.argv) < 2: usage()
     im_file = sys.argv[1]
