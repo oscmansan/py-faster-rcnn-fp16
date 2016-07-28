@@ -24,7 +24,7 @@ DATA_DIR = 'data'
 
 
 def vis_detections(ax, class_name, dets, thresh=0.5):
-    """Draw detected bounding boxes."""
+    # Draw detected bounding boxes
     inds = np.where(dets[:, -1] >= thresh)[0]
     inds = filter(lambda x: x >= thresh, dets[:, -1])
     if len(inds) == 0:
@@ -39,23 +39,22 @@ def vis_detections(ax, class_name, dets, thresh=0.5):
             plt.Rectangle((bbox[0], bbox[1]),
                           bbox[2] - bbox[0],
                           bbox[3] - bbox[1], fill=False,
-                          edgecolor='red', linewidth=3.5)
+                          edgecolor='#00ff00', linewidth=3.5)
         )
         ax.text(bbox[0], bbox[1] - 2,
                 '{:s} {:.3f}'.format(class_name, score),
-                bbox=dict(facecolor='blue', alpha=0.5),
-                fontsize=14, color='white')
+                bbox=dict(facecolor='black', alpha=0.5),
+                fontsize=14, color='yellow')
 
     plt.axis('off')
     plt.tight_layout()
 
 
-def draw_img_with_dets(i, img, boxes, scores):
-    fig, ax = plt.subplots(figsize=(16,12))
-
+def draw_img_with_dets(img, boxes, scores):
     CONF_THRESH = 0.9
     NMS_THRESH = 0.3
     
+    fig, ax = plt.subplots(figsize=(16,12))
     for cls_ind, cls in enumerate(CLASSES[1:]):
         cls_ind += 1
         cls_boxes = boxes[:, 4 * cls_ind:4 * (cls_ind + 1)]
@@ -64,7 +63,6 @@ def draw_img_with_dets(i, img, boxes, scores):
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
         vis_detections(ax, cls, dets, thresh=CONF_THRESH)
-
     img = img[:, :, (2, 1, 0)] 
     ax.imshow(img, aspect='equal')
     #fig.savefig('img{:d}.png'.format(i))
@@ -87,13 +85,13 @@ def detect(net, im_files):
         avg += diff
         scores[i] = np.copy(scores_)
         boxes[i] = np.copy(boxes_)
-        print ('{:s} took {:.3f}s').format(im_file, diff)
+        print ('{:s} took {:.3f}s for {:d} detections').format(im_file, diff, boxes[i].shape[0])
     avg /= N
     print ('Detection took {:.3f}s\n').format(avg)
 
     for i, im_file in enumerate(im_files):
     	print 'drawing img', str(i) + ':', im_file + '...'
-        draw_img_with_dets(i, imgarr[i], boxes[i], scores[i])
+        draw_img_with_dets(imgarr[i], boxes[i], scores[i])
 
 
 def usage():
