@@ -31,7 +31,7 @@ def vis_detections(ax, class_name, dets, thresh=0.5):
         return
 
     for i in inds:
-    	i = int(i)
+        i = int(i)
         bbox = dets[i, :4]
         score = dets[i, -1]
 
@@ -50,45 +50,50 @@ def vis_detections(ax, class_name, dets, thresh=0.5):
     plt.tight_layout()
 
 
+def draw_img_with_dets(i, img, boxes, scores):
+    fig, ax = plt.subplots(figsize=(16,12))
+
+    CONF_THRESH = 0.9
+    NMS_THRESH = 0.3
+    
+    for cls_ind, cls in enumerate(CLASSES[1:]):
+        cls_ind += 1
+        cls_boxes = boxes[:, 4 * cls_ind:4 * (cls_ind + 1)]
+        cls_scores = scores[:, cls_ind]
+        dets = np.hstack((cls_boxes, cls_scores[:, np.newaxis])).astype(np.float32)
+        keep = nms(dets, NMS_THRESH)
+        dets = dets[keep, :]
+        vis_detections(ax, cls, dets, thresh=CONF_THRESH)
+
+    img = img[:, :, (2, 1, 0)] 
+    ax.imshow(img, aspect='equal')
+    #fig.savefig('img{:d}.png'.format(i))
+
+
 def detect(net, im_files):
     # Detect all object classes and regress object bounds
-    N = len(im_files)
-    sqrtN = int(math.ceil(math.sqrt(N)))
-    fig, axarr = plt.subplots(sqrtN, sqrtN, sharey=True, figsize=(16,12))
-    axarr = axarr.flatten()
-    imarr = []
+    N = len(im_files)    
+    
+    imgarr = [None] * N
+    scores = [None] * N
+    boxes  = [None] * N
     avg = 0
     for i, im_file in enumerate(im_files):
-	    imarr.append(cv2.imread(im_file))
-	    start = time.clock()
-	    scores, boxes = im_detect(net, imarr[i])
-	    end = time.clock()
-	    diff = end - start
-	    avg += diff
-	    print ('{:s} took {:.3f}s').format(im_file, diff)
-
-	    print 'boxes.spape:', boxes.shape
-	    print 'scores.shape:', scores.shape
-
-	    CONF_THRESH = 0.5
-	    NMS_THRESH = 0.3
-	    
-	    for cls_ind, cls in enumerate(CLASSES[1:]):
-	        cls_ind += 1
-	        cls_boxes = boxes[:, 4 * cls_ind:4 * (cls_ind + 1)]
-	        cls_scores = scores[:, cls_ind]
-	        dets = np.hstack((cls_boxes, cls_scores[:, np.newaxis])).astype(np.float32)
-	        keep = nms(dets, NMS_THRESH)
-	        dets = dets[keep, :]
-	        vis_detections(axarr[i], cls, dets, thresh=CONF_THRESH)
-
-	    imarr[i] = imarr[i][:, :, (2, 1, 0)]
-
+        imgarr[i] = (cv2.imread(im_file))
+        start = time.clock()
+        scores_, boxes_ = im_detect(net, imgarr[i])
+        end = time.clock()
+        diff = end - start
+        avg += diff
+        scores[i] = np.copy(scores_)
+        boxes[i] = np.copy(boxes_)
+        print ('{:s} took {:.3f}s').format(im_file, diff)
     avg /= N
-    print ('Detection took {:.3f}s\n').format(avg) 
+    print ('Detection took {:.3f}s\n').format(avg)
 
-    for i in range(N):
-		axarr[i].imshow(imarr[i], aspect='equal')
+    for i, im_file in enumerate(im_files):
+    	print 'drawing img', str(i) + ':', im_file + '...'
+        draw_img_with_dets(i, imgarr[i], boxes[i], scores[i])
 
 
 def usage():
@@ -115,8 +120,9 @@ if __name__ == '__main__':
 
     path = sys.argv[1]
     for (_, _, im_files) in os.walk(path):
-    	print 'input images:', str(im_files) + '\n'
-    	im_files = map(lambda im: path + '/' + im, im_files)
+        #im_files = [im_files[0]] * 10
+        print 'input images:', str(im_files) + '\n'
+        im_files = map(lambda im: path + '/' + im, im_files)
 
     detect(net, im_files)
     plt.show()
