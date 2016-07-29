@@ -70,7 +70,7 @@ def draw_img_with_dets(img, boxes, scores):
 
 def detect(net, im_files):
     # Detect all object classes and regress object bounds
-    N = len(im_files)    
+    N = len(im_files)
     
     imgarr = [None] * N
     scores = [None] * N
@@ -78,9 +78,9 @@ def detect(net, im_files):
     avg = 0
     for i, im_file in enumerate(im_files):
         imgarr[i] = (cv2.imread(im_file))
-        start = time.clock()
+        start = time.time()
         scores_, boxes_ = im_detect(net, imgarr[i])
-        end = time.clock()
+        end = time.time()
         diff = end - start
         avg += diff
         scores[i] = np.copy(scores_)
@@ -122,5 +122,12 @@ if __name__ == '__main__':
         print 'input images:', str(im_files) + '\n'
         im_files = map(lambda im: path + '/' + im, im_files)
 
+    # Caching data to accelerate forward pass for real images
+    print 'Caching data...\n'
+    dummy_image = np.zeros((375,500,3), np.uint8)
+    im_detect(net, dummy_image)
+
     detect(net, im_files)
-    plt.show()
+
+    # Show images in separate windows
+    #plt.show()
