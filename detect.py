@@ -68,16 +68,16 @@ def draw_img_with_dets(img, boxes, scores):
 
 
 def total_area(boxes):
+    x1 = boxes[:, 0::4].flatten()
+    y1 = boxes[:, 1::4].flatten()
+    x2 = boxes[:, 2::4].flatten()
+    y2 = boxes[:, 3::4].flatten()
     area = 0
-    for i in range(boxes.shape[0]):
-        for j in range(boxes.shape[1]/4)[1:]:
-            x1 = boxes[i,4*j+0]
-            y1 = boxes[i,4*j+1]
-            x2 = boxes[i,4*j+2]
-            y2 = boxes[i,4*j+3]
-            w = x2-x1
-            h = y2-y1
-            area += w*h
+    assert x1.size == boxes.size/4
+    for i in range(boxes.size/4):
+        w = x2[i]-x1[i]
+        h = y2[i]-y1[i]
+        area += w*h
     return int(area)
 
 
@@ -133,8 +133,8 @@ if __name__ == '__main__':
     path = sys.argv[1]
     for (_, _, im_files) in os.walk(path):
         #im_files = [im_files[0]] * 10
-        im_files = im_files[0:5]
-        print 'input images:', str(im_files) + '\n'
+        #im_files = im_files[0:5]
+        print 'Input images:', str(im_files) + '\n'
         im_files = map(lambda im: path + '/' + im, im_files)
 
     # Caching data to accelerate forward pass for real images
@@ -145,4 +145,4 @@ if __name__ == '__main__':
     detect(net, im_files)
 
     # Show images in separate windows
-    plt.show()
+    #plt.show()
