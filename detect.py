@@ -72,8 +72,8 @@ def total_area(boxes):
     y1 = boxes[:, 1::4].flatten()
     x2 = boxes[:, 2::4].flatten()
     y2 = boxes[:, 3::4].flatten()
-    area = 0
     assert x1.size == boxes.size/4
+    area = 0
     for i in range(boxes.size/4):
         w = x2[i]-x1[i]
         h = y2[i]-y1[i]
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     # Caching data to accelerate forward pass for real images
     print 'Caching data...\n'
-    dummy_image = np.zeros((375,500,3), np.uint8)
+    dummy_image = np.zeros((600,1000,3), np.uint8)
     im_detect(net, dummy_image)
 
     detect(net, im_files)
