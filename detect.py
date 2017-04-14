@@ -145,4 +145,4 @@ if __name__ == '__main__':
     detect(net, im_files)
 
     # Show images in separate windows
-    #plt.show()
+    plt.show()
