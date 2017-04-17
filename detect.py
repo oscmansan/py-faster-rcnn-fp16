@@ -75,8 +75,8 @@ def total_area(boxes):
     assert x1.size == boxes.size/4
     area = 0
     for i in range(boxes.size/4):
-        w = x2[i]-x1[i]
-        h = y2[i]-y1[i]
+        w = (x2[i]-x1[i]).astype(np.float32)
+        h = (y2[i]-y1[i]).astype(np.float32)
         area += w*h
     return int(area)
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     path = sys.argv[1]
     for (_, _, im_files) in os.walk(path):
         #im_files = [im_files[0]] * 10
-        #im_files = im_files[0:5]
+        im_files = im_files[0:5]
         print 'Input images:', str(im_files) + '\n'
         im_files = map(lambda im: path + '/' + im, im_files)
 
@@ -146,3 +146,4 @@ if __name__ == '__main__':
 
     # Show images in separate windows
     plt.show()
+    plt.close('all')
