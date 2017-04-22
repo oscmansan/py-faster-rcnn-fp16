@@ -11,6 +11,7 @@ import caffe, os, sys, cv2
 from os import walk
 import time
 import math
+import random
 
 CLASSES = ('__background__',
            'aeroplane', 'bicycle', 'bird', 'boat',
@@ -64,7 +65,7 @@ def draw_img_with_dets(img, boxes, scores):
         vis_detections(ax, cls, dets, thresh=CONF_THRESH)
     img = img[:, :, (2, 1, 0)] 
     ax.imshow(img, aspect='equal')
-    #fig.savefig('img{:d}.png'.format(i))
+    #fig.savefig('output.png')
 
 
 def total_area(boxes):
@@ -88,24 +89,27 @@ def detect(net, im_files):
     imgarr = [None] * N
     scores = [None] * N
     boxes  = [None] * N
-    avg = 0
+    t = 0
     for i, im_file in enumerate(im_files):
         imgarr[i] = (cv2.imread(im_file))
         start = time.time()
         scores_, boxes_ = im_detect(net, imgarr[i])
         end = time.time()
         diff = end - start
-        avg += diff
+        t += diff
         scores[i] = np.copy(scores_)
         boxes[i] = np.copy(boxes_)
         area = total_area(boxes_)
-        print ('{:s} took {:.3f}s for {:d} detections in {:d} pixels').format(im_file, diff, boxes[i].shape[0], area)
-    avg /= N
-    print ('Detection took {:.3f}s\n').format(avg)
+        #print ('{:s} took {:.3f}s for {:d} detections in {:d} pixels').format(im_file, diff, boxes[i].shape[0], area)
+    #print ('Detection took {:.3f}s\n').format(t/N)
 
+    '''
     for i, im_file in enumerate(im_files):
     	print 'drawing img', str(i) + ':', im_file + '...'
         draw_img_with_dets(imgarr[i], boxes[i], scores[i])
+    # Show images in separate windows
+    plt.show()
+    '''
 
 
 def usage():
@@ -132,18 +136,16 @@ if __name__ == '__main__':
 
     path = sys.argv[1]
     for (_, _, im_files) in os.walk(path):
-        #im_files = [im_files[0]] * 10
-        im_files = im_files[0:5]
+        #im_files = im_files[0:5]
+        #im_files = [im_files[3]]
+        #im_files = [ im_files[i] for i in
+        #            sorted(random.sample(xrange(len(im_files)), 10)) ]
         print 'Input images:', str(im_files) + '\n'
         im_files = map(lambda im: path + '/' + im, im_files)
 
     # Caching data to accelerate forward pass for real images
-    print 'Caching data...\n'
+    print 'Warm up with dummy input...\n'
     dummy_image = np.zeros((600,1000,3), np.uint8)
     im_detect(net, dummy_image)
 
     detect(net, im_files)
-
-    # Show images in separate windows
-    plt.show()
-    plt.close('all')
