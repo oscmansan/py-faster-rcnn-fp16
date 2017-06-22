@@ -51,7 +51,7 @@ def vis_detections(ax, class_name, dets, thresh=0.5):
 
 
 def draw_img_with_dets(img, boxes, scores):
-    CONF_THRESH = 0.9
+    CONF_THRESH = 0.8
     NMS_THRESH = 0.3
     
     fig, ax = plt.subplots(figsize=(16,12))
@@ -82,7 +82,7 @@ def total_area(boxes):
     return int(area)
 
 
-def detect(net, im_files):
+def detect(net, im_files, display=False):
     # Detect all object classes and regress object bounds
     N = len(im_files)
     
@@ -100,16 +100,15 @@ def detect(net, im_files):
         scores[i] = np.copy(scores_)
         boxes[i] = np.copy(boxes_)
         area = total_area(boxes_)
-        #print ('{:s} took {:.3f}s for {:d} detections in {:d} pixels').format(im_file, diff, boxes[i].shape[0], area)
+        print ('{:s} took {:.3f}s for {:d} detections in {:d} pixels').format(im_file, diff, boxes[i].shape[0], area)
     #print ('Detection took {:.3f}s\n').format(t/N)
 
-    '''
-    for i, im_file in enumerate(im_files):
-    	print 'drawing img', str(i) + ':', im_file + '...'
-        draw_img_with_dets(imgarr[i], boxes[i], scores[i])
-    # Show images in separate windows
-    plt.show()
-    '''
+    if display:
+        for i, im_file in enumerate(im_files):
+    	    print 'drawing img', str(i) + ':', im_file + '...'
+            draw_img_with_dets(imgarr[i], boxes[i], scores[i])
+        # Show images in separate windows
+        plt.show()
 
 
 def usage():
@@ -124,8 +123,8 @@ if __name__ == '__main__':
 
     prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'VGG16', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
     caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'VGG16_faster_rcnn_final.caffemodel')
-    #prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'ZF', 'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    #caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'ZF_faster_rcnn_final.caffemodel')
+    #prototxt = os.path.join(MODELS_DIR, 'pascal_voc', 'VGG16', 'faster_rcnn_end2end', 'test_pruned.prototxt')
+    #caffemodel = os.path.join(DATA_DIR, 'faster_rcnn_models', 'vgg16_faster_rcnn_iter_70000.caffemodel.20170527111723')
 
     caffe.set_mode_gpu()
     caffe.set_device(0)
@@ -137,7 +136,7 @@ if __name__ == '__main__':
     path = sys.argv[1]
     for (_, _, im_files) in os.walk(path):
         #im_files = im_files[0:5]
-        #im_files = [im_files[3]]
+        im_files = [im_files[3]]
         #im_files = [ im_files[i] for i in
         #            sorted(random.sample(xrange(len(im_files)), 10)) ]
         print 'Input images:', str(im_files) + '\n'
@@ -148,4 +147,4 @@ if __name__ == '__main__':
     dummy_image = np.zeros((600,1000,3), np.uint8)
     im_detect(net, dummy_image)
 
-    detect(net, im_files)
+    detect(net, im_files, True)

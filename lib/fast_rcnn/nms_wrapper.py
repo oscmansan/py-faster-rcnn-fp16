@@ -9,11 +9,12 @@ from fast_rcnn.config import cfg
 from nms.gpu_nms import gpu_nms
 from nms.cpu_nms import cpu_nms
 from nms.py_cpu_nms import py_cpu_nms
+import numpy as np
 
 def nms(dets, thresh, force_cpu=False):
     """Dispatch to either CPU or GPU NMS implementations."""
 
-    return py_cpu_nms(dets, thresh)
+    dets = dets.astype(np.float32)
 
     if dets.shape[0] == 0:
         return []
